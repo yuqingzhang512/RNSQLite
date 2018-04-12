@@ -25,9 +25,16 @@ const instructions = Platform.select({
 export default class App extends Component {
   constructor(props) {
     super(props);
+    var number = [];
+    for (var i = 0; i < 10000; i++) {
+      number.push({
+        key: ""+i
+      });
+    }
     this.state = {
       person: [],
-      db: null
+      db: null,
+      list: number
     };
   }
 
@@ -80,8 +87,8 @@ export default class App extends Component {
           title="Clean"
           onPress={this.onPressClean.bind(this)}/>
         <FlatList
-          data={this.state.person}
-          renderItem={({item}) => <Text>{item.key + ', ' +item.name}</Text>}
+          data={this.state.list}
+          renderItem={({item}) => <Text>{item.key}</Text>}
         />
       </View>
     );
@@ -94,11 +101,9 @@ export default class App extends Component {
     var startTime, endTime;
     db.transaction(tx => {
       startTime = new Date();
-      for (var i = 0; i < 10; i++) {
-        console.log("start insert " + i);
-        tx.executeSql(insertStatement, [i, "Zhang-"+i], (tx, results)=> {
-          console.log("finish insert " + i );
-        });
+      for (var i = 0; i < 100000; i++) {
+        // console.log("start insert " + i);
+        tx.executeSql(insertStatement, [i, "Zhang-"+i]);
       }
       // tx.executeSql(insertStatement, [1, "A"]);
       // that.displayData();
@@ -134,27 +139,27 @@ export default class App extends Component {
   }
 
   displayData() {
-    var db = this.state.db;
-    var that = this;
-    db.transaction((tx) => {
-      tx.executeSql('SELECT * FROM Person', [], (tx, results) => {
-          console.log("Query completed");
-          var person = [];
-          var len = results.rows.length, i, item;
-          for (i = 0; i < len; i++){
-            item = results.rows.item(i);
-            person.push({
-              key: ""+item.id,
-              name: item.name
-            });
-          }
-          that.setState({
-            person: person
-          });
-        }, (tx, error) => {
-          alert("Error");
-        });
-    });
+    // var db = this.state.db;
+    // var that = this;
+    // db.transaction((tx) => {
+    //   tx.executeSql('SELECT * FROM Person', [], (tx, results) => {
+    //       console.log("Query completed");
+    //       var person = [];
+    //       var len = results.rows.length, i, item;
+    //       for (i = 0; i < len; i++){
+    //         item = results.rows.item(i);
+    //         person.push({
+    //           key: ""+item.id,
+    //           name: item.name
+    //         });
+    //       }
+    //       that.setState({
+    //         person: person
+    //       });
+    //     }, (tx, error) => {
+    //       alert("Error");
+    //     });
+    // });
   }
 }
 
