@@ -54,7 +54,7 @@ export default class App extends Component {
     var db = SQLite.openDatabase("test.db", "1.0", "Test Database", 200000, this.openCB, this.errorCB);
     if (db) {
       db.transaction(tx => {
-        tx.executeSql('CREATE TABLE IF NOT EXISTS Person(id REAL UNIQUE, name TEXT)', [], (tx, results) => {
+        tx.executeSql('CREATE TABLE IF NOT EXISTS Person(id REAL UNIQUE, name TEXT, type Int)', [], (tx, results) => {
           console.log("create success");
 
           this.setState({
@@ -63,7 +63,7 @@ export default class App extends Component {
           this.displayData();
         }, (tx, error) => {
           alert("Fail to create database. " + error.message);
-        })
+        });
       });
     }
   }
@@ -84,12 +84,21 @@ export default class App extends Component {
           title="Add"
           onPress={this.onPressAdd.bind(this)}/>
         <Button
+          title="Search"
+          onPress={this.onPressSearch.bind(this)}/>
+        <Button
           title="Clean"
           onPress={this.onPressClean.bind(this)}/>
-        <FlatList
+        <Button
+          title="Update"
+          onPress={this.onPressUpdate.bind(this)}/>
+          <Button
+          title="Insert"
+          onPress={this.onPressInsert.bind(this)}/>
+        {/* <FlatList
           data={this.state.list}
           renderItem={({item}) => <Text>{item.key}</Text>}
-        />
+        /> */}
       </View>
     );
   }
@@ -97,13 +106,13 @@ export default class App extends Component {
   onPressAdd() {
     var db = this.state.db;
     var that = this;
-    let insertStatement = "INSERT INTO Person (id, name) VALUES (?, ?)";
+    let insertStatement = "INSERT INTO Person (id, name, type) VALUES (?, ?, ?)";
     var startTime, endTime;
     db.transaction(tx => {
       startTime = new Date();
       for (var i = 0; i < 100000; i++) {
         // console.log("start insert " + i);
-        tx.executeSql(insertStatement, [i, "Zhang-"+i]);
+        tx.executeSql(insertStatement, [i, "Zhang-"+i, i%1000]);
       }
       // tx.executeSql(insertStatement, [1, "A"]);
       // that.displayData();
@@ -124,6 +133,45 @@ export default class App extends Component {
       // that.displayData();
     });
     console.log("press finish");
+  }
+
+  onPressSearch() {
+    var db = this.state.db;
+    var startTime, endTime;
+    db.transaction(tx => {
+      startTime = new Date();
+      tx.executeSql("SELECT * FROM Person GROUP BY type order by name LIMIT 100", [], (tx, results) => {
+        // console.log("query done.");
+        endTime = new Date();
+        console.log("query time: " + (endTime - startTime)/1000 + "s, length: " + results.rows.length);
+      })
+    });
+  }
+
+  onPressUpdate() {
+    var db = this.state.db;
+    var startTime, endTime;
+    db.transaction(tx => {
+      startTime = new Date();
+      tx.executeSql("UPDATE Person SET name = 'Chris' WHERE id = 1000", [], (tx, results) => {
+        // console.log("query done.");
+        endTime = new Date();
+        console.log("update time: " + (endTime - startTime)/1000 + "s");
+      })
+    });
+  }
+
+  onPressInsert() {
+    var db = this.state.db;
+    var startTime, endTime;
+    db.transaction(tx => {
+      startTime = new Date();
+      tx.executeSql("INSERT INTO Person (id, name, type) VALUES (999999999,'abc',1)", [], (tx, results) => {
+        // console.log("query done.");
+        endTime = new Date();
+        console.log("insert time: " + (endTime - startTime)/1000 + "s");
+      })
+    });
   }
 
   onPressClean() {
